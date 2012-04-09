@@ -14,15 +14,15 @@ namespace Anagrammar
             InitializeComponent();
 
             sourceWord.GotFocus += (sender, args) => { sourceWord.Text = ""; };
+
+            searchButton.Click += (sender, args) => CountWords();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        private void CountWords()
         {
             var xml = XDocument.Load("kotus-sanalista_v1.xml");
 
             anagrammarResults.Text += String.Format(" Word Count: {0}", WordCount(xml));
-
-            base.OnNavigatedTo(e);
         }
 
         private static int WordCount(XContainer xml)

@@ -34,7 +34,7 @@
             </Grid.RowDefinitions>        
             <StackPanel x:Name="ControlPanel" Grid.Row="0">
                 <TextBox Height="72" Name="sourceWord" Text="Type word here" Width="460" />
-                <Button Content="Search!" Height="71" Name="button1" Width="460" />
+                <Button Content="Search!" Height="71" Name="searchButton" Width="460" />
             </StackPanel>
             <TextBlock Name="anagrammarResults" Text="Anagrams here." Grid.Row="1"/>
         </Grid>
