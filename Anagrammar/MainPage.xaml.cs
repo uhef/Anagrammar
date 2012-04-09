@@ -39,7 +39,13 @@ namespace Anagrammar
 
         private static List<List<string>> AnagramList(XContainer xml, String sourceWord)
         {
-            return new List<List<string>> {new List<String> {sourceWord}};
+            var orderedSourceWord = new String(sourceWord.OrderBy(c => c).ToArray());
+            var groupedSourceWord = sourceWord.GroupBy(c => c).Aggregate("", (c, grouping) => c + " " + grouping.Key + ": " + grouping.Count());
+
+            return new List<List<string>> {
+                new List<String> {orderedSourceWord},
+                new List<string> {groupedSourceWord}
+            };
         }
 
         private void CountWords()
