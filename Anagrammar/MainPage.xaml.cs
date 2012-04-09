@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
+using System.Windows.Navigation;
+using System.Xml.Linq;
 using Microsoft.Phone.Controls;
 
 namespace Anagrammar
@@ -19,6 +12,26 @@ namespace Anagrammar
         public MainPage()
         {
             InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            var xml = XDocument.Load("kotus-sanalista_v1.xml");
+
+            wordListStatus.Text = String.Format("Word Count: {0}", WordCount(xml));
+
+            base.OnNavigatedTo(e);
+        }
+
+        private static int WordCount(XContainer xml)
+        {
+            var parent = xml.Element("kotus-sanalista");
+            if (parent != null)
+            {
+                var wordQuery = from elements in parent.Elements("st") select elements;
+                return wordQuery.Count();
+            }
+            return 0;
         }
     }
 }
