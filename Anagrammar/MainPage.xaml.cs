@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml.Linq;
@@ -20,15 +21,19 @@ namespace Anagrammar
             searchButton.Click += (sender, args) => CountWords();
 
             var wordCount = 0;
+            var anagramList = new List<List<String>>();
             _worker.DoWork += (sender, args) =>
             {
                 var xml = XDocument.Load("kotus-sanalista_v1.xml");
                 wordCount = WordCount(xml);
+                anagramList = new List<List<string>> { new List<String> {args.Argument as String} };
             };
 
             _worker.RunWorkerCompleted += (sender, args) =>
             {
-                anagrammarResults.Text = String.Format("Word Count: {0}", wordCount);
+                var anagrams = anagramList.Aggregate(String.Format("Word Count: {0}", wordCount), (s, list) => 
+                    s + Environment.NewLine + list.Aggregate((s1, s2) => s1 + " " + s2));
+                anagrammarResults.Text = anagrams;
             };
         }
 
@@ -37,7 +42,7 @@ namespace Anagrammar
             if (!_worker.IsBusy)
             {
                 anagrammarResults.Text = String.Format("Counting words...");
-                _worker.RunWorkerAsync();                
+                _worker.RunWorkerAsync(sourceWord.Text);
             }
         }
 
