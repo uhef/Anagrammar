@@ -26,7 +26,7 @@ namespace Anagrammar
             {
                 var xml = XDocument.Load("kotus-sanalista_v1.xml");
                 wordCount = WordCount(xml);
-                anagramList = new List<List<string>> { new List<String> {args.Argument as String} };
+                anagramList = AnagramList(xml, args.Argument as String);
             };
 
             _worker.RunWorkerCompleted += (sender, args) =>
@@ -35,6 +35,11 @@ namespace Anagrammar
                     s + Environment.NewLine + list.Aggregate((s1, s2) => s1 + " " + s2));
                 anagrammarResults.Text = anagrams;
             };
+        }
+
+        private static List<List<string>> AnagramList(XContainer xml, String sourceWord)
+        {
+            return new List<List<string>> {new List<String> {sourceWord}};
         }
 
         private void CountWords()
