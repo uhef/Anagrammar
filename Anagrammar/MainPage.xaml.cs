@@ -1,6 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
-using System.Windows.Navigation;
 using System.Xml.Linq;
 using Microsoft.Phone.Controls;
 
@@ -8,6 +8,8 @@ namespace Anagrammar
 {
     public partial class MainPage : PhoneApplicationPage
     {
+        private readonly BackgroundWorker _worker = new BackgroundWorker();
+
         // Constructor
         public MainPage()
         {
@@ -16,13 +18,27 @@ namespace Anagrammar
             sourceWord.GotFocus += (sender, args) => { sourceWord.Text = ""; };
 
             searchButton.Click += (sender, args) => CountWords();
+
+            var wordCount = 0;
+            _worker.DoWork += (sender, args) =>
+            {
+                var xml = XDocument.Load("kotus-sanalista_v1.xml");
+                wordCount = WordCount(xml);
+            };
+
+            _worker.RunWorkerCompleted += (sender, args) =>
+            {
+                anagrammarResults.Text = String.Format("Word Count: {0}", wordCount);
+            };
         }
 
         private void CountWords()
         {
-            var xml = XDocument.Load("kotus-sanalista_v1.xml");
-
-            anagrammarResults.Text += String.Format(" Word Count: {0}", WordCount(xml));
+            if (!_worker.IsBusy)
+            {
+                anagrammarResults.Text = String.Format("Counting words...");
+                _worker.RunWorkerAsync();                
+            }
         }
 
         private static int WordCount(XContainer xml)
