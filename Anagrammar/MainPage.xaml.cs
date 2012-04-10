@@ -39,13 +39,21 @@ namespace Anagrammar
 
         private static List<List<string>> AnagramList(XContainer xml, String sourceWord)
         {
-            var orderedSourceWord = new String(sourceWord.OrderBy(c => c).ToArray());
-            var groupedSourceWord = sourceWord.GroupBy(c => c).Aggregate("", (c, grouping) => c + " " + grouping.Key + ": " + grouping.Count());
+            var analyzedWord = CharacterCount.AnalyzeWord(sourceWord);
+            var sourceWordAnalysis = analyzedWord.Aggregate("", (c, grouping) => c + " " + grouping.Key + ": " + grouping.Count);
 
-            return new List<List<string>> {
-                new List<String> {orderedSourceWord},
-                new List<string> {groupedSourceWord}
-            };
+            var parent = xml.Element("kotus-sanalista");
+            if (parent != null)
+            {
+                var words = from elements in parent.Elements("st").Elements("s")
+                            select elements;
+                var possibleCandidates = words
+                    .Where(element => analyzedWord.CanConstruct(CharacterCount.AnalyzeWord(element.Value)))
+                    .Take(10)
+                    .Select(element => new List<string> {element.Value});
+                return new List<List<string>> { new List<string> {sourceWordAnalysis} }.Concat(possibleCandidates).ToList();
+            }
+            return new List<List<string>>();
         }
 
         private void CountWords()
@@ -62,10 +70,37 @@ namespace Anagrammar
             var parent = xml.Element("kotus-sanalista");
             if (parent != null)
             {
-                var wordQuery = from elements in parent.Elements("st") select elements;
+                var wordQuery = from elements in parent.Elements("st").Elements("s") select elements;
                 return wordQuery.Count();
             }
             return 0;
+        }
+    }
+
+    public class CharacterCount
+    {
+        public char Key { get; private set; }
+        public int Count { get; private set; }
+
+        public static IEnumerable<CharacterCount> AnalyzeWord(String word)
+        {
+            return word.Where(c => !Char.IsWhiteSpace(c))
+                .OrderBy(Char.ToLower)
+                .GroupBy(c => c)
+                .Select(grouping => new CharacterCount { Key = grouping.Key, Count = grouping.Count() });
+        }
+
+        public bool CanConstruct(CharacterCount characterCount)
+        {
+            return Key == characterCount.Key && Count >= characterCount.Count;
+        }
+    }
+
+    static class EnumerableExtensions
+    {
+        public static bool CanConstruct(this IEnumerable<CharacterCount> source, IEnumerable<CharacterCount> target)
+        {
+            return target.All(characterCount => source.Any(c => c.CanConstruct(characterCount)));
         }
     }
 }
